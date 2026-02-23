@@ -35,18 +35,18 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from artifact_paths import DEFAULT_ARTIFACT_DIR, canonical_scan_json_path, ensure_artifact_dir
-from ptx_probe import (
+from src.artifact_paths import DEFAULT_ARTIFACT_DIR, canonical_scan_json_path, ensure_artifact_dir
+from src.ptx_probe import (
     PTXProber, ProbeResult, ProbeOutcome,
     generate_all_probes,
 )
-from sass_probe import CubinBuilder, SASSProber, SASSProbeResult
-from sass_reference import (
+from src.sass_probe import CubinBuilder, SASSProber, SASSProbeResult
+from src.sass_reference import (
     BLACKWELL_INSTRUCTIONS, lookup_mnemonic, classify_discovered_opcode,
     get_blackwell_only_instructions, get_sm100_tmem_instructions,
     get_mxfp4_relevant_instructions, get_instruction_count,
 )
-from cuda_probe import (
+from src.cuda_probe import (
     get_cuda_probe_kernels, compile_and_discover_with_hex,
 )
 

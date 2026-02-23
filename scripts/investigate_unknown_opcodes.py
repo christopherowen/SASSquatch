@@ -12,14 +12,19 @@ import argparse
 import ctypes
 import json
 import sys
+from pathlib import Path
 from ctypes import (
     byref, c_char, c_int, c_size_t, c_uint, c_ulonglong, c_void_p,
     create_string_buffer,
 )
 
-from artifact_paths import DEFAULT_ARTIFACT_DIR, resolve_scan_input_path
-from sass_probe import CubinBuilder
-from cubin_utils import (
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.artifact_paths import DEFAULT_ARTIFACT_DIR, resolve_scan_input_path
+from src.sass_probe import CubinBuilder
+from src.cubin_utils import (
     disassemble_cubin,
     extract_disasm_statement_at_offset,
     find_text_section,

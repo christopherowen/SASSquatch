@@ -22,13 +22,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Tuple
 
-from artifact_paths import (
+from src.artifact_paths import (
     DEFAULT_ARTIFACT_DIR,
     canonical_report_md_path,
     ensure_artifact_dir,
     resolve_scan_input_path,
 )
-from sass_reference import lookup_mnemonic
+from src.sass_reference import lookup_mnemonic
 
 
 def _load(path: Path) -> Dict[str, Any]:

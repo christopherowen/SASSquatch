@@ -29,7 +29,7 @@ import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Dict, List, Optional, Tuple
-from cubin_utils import disassemble_cubin, find_text_section
+from src.cubin_utils import disassemble_cubin, find_text_section
 
 
 # ---------------------------------------------------------------------------

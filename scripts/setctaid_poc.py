@@ -27,11 +27,17 @@ import subprocess
 import sys
 import tempfile
 import time
+from pathlib import Path
 from ctypes import (
     byref, c_char, c_int, c_size_t, c_uint, c_ulonglong, c_void_p,
     create_string_buffer,
 )
-from cubin_utils import (
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.cubin_utils import (
     disassemble_cubin,
     find_text_section as find_text_section_shared,
     patch_instruction_words,

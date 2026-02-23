@@ -1,9 +1,15 @@
 import argparse
 import json
 import struct
+import sys
+from pathlib import Path
 
-from artifact_paths import DEFAULT_ARTIFACT_DIR, resolve_scan_input_path
-from cubin_utils import (
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.artifact_paths import DEFAULT_ARTIFACT_DIR, resolve_scan_input_path
+from src.cubin_utils import (
     disassemble_cubin,
     extract_disasm_statement_at_offset,
     find_text_section,
@@ -52,7 +58,7 @@ for opc_hex, info in p3.items():
 interesting.sort()
 
 # Build template cubin
-from sass_probe import CubinBuilder
+from src.sass_probe import CubinBuilder
 builder = CubinBuilder(target="sm_121a")
 template_data = builder.compile_template()
 

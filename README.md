@@ -84,19 +84,20 @@ python generate_report.py
 
 ## File Structure
 
-| File | Description |
+| Path | Description |
 |------|-------------|
 | `sassquatch.py` | Main CLI entry point and phase orchestrator |
-| `ptx_probe.py` | PTX instruction generator and compilation tester (Phase 1) |
-| `sass_probe.py` | SASS binary parser, patcher, and opcode enumerator (Phase 2 & 3) |
-| `cubin_utils.py` | Shared cubin ELF parsing, disassembly, and patch helpers |
-| `artifact_paths.py` | Shared artifact naming and path resolution helpers |
-| `sass_reference.py` | Documented Blackwell SASS instruction database |
-| `cuda_api.py` | Minimal CUDA Driver API bindings via ctypes |
 | `generate_report.py` | Render Markdown reports from JSON scan output |
-| `investigate_unknown_opcodes.py` | Analyze unknown or unlabeled opcode signatures |
-| `label_phase3_opcodes.py` | Label Phase 3 opcode signatures via `nvdisasm` |
-| `setctaid_poc.py` | Focused proof-of-concept for `SETCTAID.X` behavior |
+| `src/ptx_probe.py` | PTX instruction generator and compilation tester (Phase 1) |
+| `src/sass_probe.py` | SASS binary parser, patcher, and opcode enumerator (Phase 2 & 3) |
+| `src/cuda_probe.py` | CUDA C++ probe kernels and opcode discovery helpers |
+| `src/cuda_api.py` | Minimal CUDA Driver API bindings via ctypes |
+| `src/sass_reference.py` | Documented Blackwell SASS instruction database |
+| `src/cubin_utils.py` | Shared cubin ELF parsing, disassembly, and patch helpers |
+| `src/artifact_paths.py` | Shared artifact naming and path resolution helpers |
+| `scripts/investigate_unknown_opcodes.py` | Analyze unknown or unlabeled opcode signatures |
+| `scripts/label_phase3_opcodes.py` | Label Phase 3 opcode signatures via `nvdisasm` |
+| `scripts/setctaid_poc.py` | Focused proof-of-concept for `SETCTAID.X` behavior |
 | `sm121a_opcode_map.md` | Detailed SM121a encoding analysis and findings |
 
 ## References
