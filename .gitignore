@@ -1,0 +1,4 @@
+__pycache__/
+artifacts/
+results.json
+results_full.json
