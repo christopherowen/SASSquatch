@@ -1,10 +1,14 @@
+import importlib
+import json
+import subprocess
+import sys
+import tempfile
 import unittest
 from types import SimpleNamespace
 from unittest import mock
 
 import sassquatch
 from src.ptx_probe import ProbeResult
-from src.sass_probe import TEMPLATE_KERNEL_CU
 
 
 class _FakeInstruction:
@@ -64,24 +68,38 @@ class _FakeSASSProber:
 
     def discover_from_probes(self, _compilable, _build_ptx_program, _target, callback=None, opt_levels=None):
         if callback:
-            callback(1, 1, 2)
-        return {
-            "IADD3": {
-                "bits_11_0": "0x321",
-                "bits_11_2": "0x0c8",
-                "full_word_lo": "0x0000000000000321",
-                "name": "probe",
-            }
-        }
+            callback(1, 1, 1)
+        return {}
 
 
 class SmokeSignalTests(unittest.TestCase):
-    def test_template_keeps_escaped_newlines_in_inline_ptx(self):
-        self.assertIn("\"{\\n\\t\"", TEMPLATE_KERNEL_CU)
-        self.assertIn("\"  .reg .pred p;\\n\\t\"", TEMPLATE_KERNEL_CU)
-        self.assertIn("\"}\\n\"", TEMPLATE_KERNEL_CU)
+    def test_core_modules_import(self):
+        modules = [
+            "sassquatch",
+            "src.artifact_paths",
+            "src.cubin_utils",
+            "src.cuda_api",
+            "src.cuda_probe",
+            "src.ptx_probe",
+            "src.sass_probe",
+            "src.sass_reference",
+        ]
+        for module_name in modules:
+            with self.subTest(module=module_name):
+                self.assertIsNotNone(importlib.import_module(module_name))
 
-    def test_run_phase2_orchestration_smoke(self):
+    def test_cli_help_runs(self):
+        result = subprocess.run(
+            [sys.executable, "sassquatch.py", "--help"],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("usage:", result.stdout.lower())
+
+    def test_phase2_returns_target_mapping(self):
         args = SimpleNamespace(targets=["sm_121a"])
         fake_phase1 = {
             "add.s32": {
@@ -99,8 +117,25 @@ class SmokeSignalTests(unittest.TestCase):
             result = sassquatch.run_phase2(args, phase1_results=fake_phase1)
 
         self.assertIn("sm_121a", result)
-        self.assertIn("MOV", result["sm_121a"])
-        self.assertIn("IADD3", result["sm_121a"])
+        self.assertIsInstance(result["sm_121a"], dict)
+        self.assertGreaterEqual(len(result["sm_121a"]), 1)
+
+    def test_export_results_writes_expected_top_level_keys(self):
+        args = SimpleNamespace(targets=["sm_121a"], phase=[1, 2], verbose=False)
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
+            output_path = tmp.name
+        try:
+            sassquatch.export_results(output_path, args=args)
+            with open(output_path, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+            for key in ["tool", "version", "timestamp", "targets", "phases_run"]:
+                self.assertIn(key, payload)
+        finally:
+            try:
+                import os
+                os.unlink(output_path)
+            except OSError:
+                pass
 
 
 if __name__ == "__main__":

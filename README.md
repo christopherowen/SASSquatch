@@ -69,9 +69,9 @@ docker exec -it <container> python3 /path/to/sassquatch.py --phase 1 2
 
 ### Smoke Tests
 
-`smoke_signals.py` is a minimal unit-style smoke suite that catches critical
-regressions from cleanup/refactor work (import paths, Phase 2 orchestration,
-and inline PTX template escaping).
+`smoke_signals.py` is a minimal unit-style smoke suite with general health
+checks for module imports, CLI startup, basic phase execution contract, and
+artifact export shape.
 
 ```bash
 # Run from repo root
@@ -104,7 +104,7 @@ python generate_report.py
 | Path | Description |
 |------|-------------|
 | `sassquatch.py` | Main CLI entry point and phase orchestrator |
-| `smoke_signals.py` | Root smoke tests guarding key regression paths |
+| `smoke_signals.py` | Root smoke tests for general health validations |
 | `generate_report.py` | Render Markdown reports from JSON scan output |
 | `src/ptx_probe.py` | PTX instruction generator and compilation tester (Phase 1) |
 | `src/sass_probe.py` | SASS binary parser, patcher, and opcode enumerator (Phase 2 & 3) |
