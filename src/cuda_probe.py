@@ -1844,7 +1844,7 @@ def compile_and_discover_with_hex(kernels: List[CUDAProbeKernel],
     import struct
     import subprocess
     import tempfile
-    from sass_probe import CubinBuilder
+    from src.sass_probe import CubinBuilder
 
     opcode_map = {}
     total = len(kernels)

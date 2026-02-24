@@ -626,9 +626,9 @@ def run_phase3(args, phase2_results=None):
 
     # Import CUDA driver (needs GPU)
     try:
-        from cuda_api import CUDADriver
+        from src.cuda_api import CUDADriver
     except ImportError:
-        print(f"\n  {C.RED}Error: Could not import cuda_api module{C.RESET}")
+        print(f"\n  {C.RED}Error: Could not import src.cuda_api module{C.RESET}")
         return None
 
     # Initialize CUDA
