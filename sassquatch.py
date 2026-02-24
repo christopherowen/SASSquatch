@@ -949,7 +949,7 @@ def export_results(filepath: str, phase1_results=None, phase2_results=None,
     """Export results to a JSON file."""
     output = {
         "tool": "sassquatch",
-        "version": "1.0.0",
+        "version": "1.33.7",
         "timestamp": datetime.now().isoformat(),
         "targets": args.targets if args else [],
         "phases_run": args.phase if args else [],
