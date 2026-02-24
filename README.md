@@ -81,7 +81,7 @@ python3 -m unittest smoke_signals.py -v
 python3 smoke_signals.py -v
 
 # Run in Docker container
-docker exec <container> bash -lc "cd /workspace/sasquatch && python3 -m unittest smoke_signals.py -v"
+docker exec <container> bash -lc "cd /workspace/sassquatch && python3 -m unittest smoke_signals.py -v"
 ```
 
 ## Artifact Conventions

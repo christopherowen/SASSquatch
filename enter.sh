@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker compose exec sasquatch bash
+docker compose exec sassquatch bash

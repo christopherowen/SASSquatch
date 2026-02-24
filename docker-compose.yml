@@ -1,7 +1,7 @@
 services:
-  sasquatch:
+  sassquatch:
     image: nvcr.io/nvidia/pytorch:26.01-py3
-    container_name: sasquatch
+    container_name: sassquatch
     deploy:
       resources:
         reservations:
@@ -13,6 +13,6 @@ services:
     stdin_open: true
     tty: true
     volumes:
-      - .:/workspace/sasquatch
-    working_dir: /workspace/sasquatch
+      - .:/workspace/sassquatch
+    working_dir: /workspace/sassquatch
     command: /bin/bash
