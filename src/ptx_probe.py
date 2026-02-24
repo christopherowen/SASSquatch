@@ -31,6 +31,7 @@ import time
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Dict, List, Optional, Set, Tuple
+from src.toolchain import resolve_ptx_version
 
 
 # ---------------------------------------------------------------------------
@@ -115,8 +116,10 @@ class ProbeOutcome:
 # PTX program generator
 # ---------------------------------------------------------------------------
 
+PTX_VERSION = resolve_ptx_version()
+
 PTX_TEMPLATE = """\
-.version 9.1
+.version {ptx_version}
 .target {target}
 .address_size 64
 
@@ -129,7 +132,7 @@ PTX_TEMPLATE = """\
 """
 
 PTX_TEMPLATE_WITH_OUTPUT = """\
-.version 9.1
+.version {ptx_version}
 .target {target}
 .address_size 64
 
@@ -158,6 +161,7 @@ def build_ptx_program(spec: ProbeSpec, target: str) -> str:
 
     if spec.needs_output:
         return PTX_TEMPLATE_WITH_OUTPUT.format(
+            ptx_version=PTX_VERSION,
             target=target,
             reg_decls=reg_block,
             smem_decl=smem_block,
@@ -165,6 +169,7 @@ def build_ptx_program(spec: ProbeSpec, target: str) -> str:
         )
     else:
         return PTX_TEMPLATE.format(
+            ptx_version=PTX_VERSION,
             target=target,
             params="",
             reg_decls=reg_block,
@@ -1754,6 +1759,7 @@ class PTXProber:
         self.verbose = verbose
         self.results: Dict[str, Dict[str, ProbeOutcome]] = {}
         self._verify_ptxas()
+        self.ptx_isa_version = resolve_ptx_version(ptxas_path=self.ptxas_path)
 
     def _verify_ptxas(self):
         """Verify ptxas is available and get version."""

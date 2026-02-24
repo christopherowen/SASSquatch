@@ -49,6 +49,7 @@ from src.sass_reference import (
 from src.cuda_probe import (
     get_cuda_probe_kernels, compile_and_discover_with_hex,
 )
+from src.toolchain import collect_toolchain_versions
 
 
 # ---------------------------------------------------------------------------
@@ -953,6 +954,7 @@ def export_results(filepath: str, phase1_results=None, phase2_results=None,
         "timestamp": datetime.now().isoformat(),
         "targets": args.targets if args else [],
         "phases_run": args.phase if args else [],
+        "toolchain_versions": collect_toolchain_versions(),
     }
 
     if phase1_results:

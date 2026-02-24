@@ -30,6 +30,7 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Dict, List, Optional, Tuple
 from src.cubin_utils import disassemble_cubin, find_text_section
+from src.toolchain import resolve_ptx_version
 
 
 # ---------------------------------------------------------------------------
@@ -164,9 +165,11 @@ extern "C" __global__ void squatch_kernel(unsigned int *out, unsigned int pred_m
 }
 """
 
-TEMPLATE_KERNEL_PTX = """\
-.version 9.1
-.target {target}
+PTX_VERSION = resolve_ptx_version()
+
+TEMPLATE_KERNEL_PTX = f"""\
+.version {PTX_VERSION}
+.target {{target}}
 .address_size 64
 
 .visible .entry squatch_kernel(.param .u64 out_param) {{
@@ -1104,6 +1107,7 @@ class SASSProber:
         # Then compile additional PTX programs to discover more opcodes
         for name, ptx_template in test_ptx_programs.items():
             ptx_source = ptx_template.format(target=target)
+            ptx_source = ptx_source.replace(".version 9.1", f".version {PTX_VERSION}")
 
             with tempfile.NamedTemporaryFile(
                 suffix=".ptx", mode="w", delete=False, prefix="sifter_disc_"
@@ -1182,6 +1186,7 @@ class SASSProber:
 
         for i, spec in enumerate(probe_specs):
             ptx_source = build_ptx_fn(spec, target_arch)
+            ptx_source = ptx_source.replace(".version 9.1", f".version {PTX_VERSION}")
 
             for opt_level in opt_levels:
                 progress += 1

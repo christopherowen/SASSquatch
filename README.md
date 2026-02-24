@@ -90,6 +90,7 @@ SASSquatch writes artifacts under `artifacts/` by default.
 
 - `artifacts/scan_results.json` -- canonical JSON output from `sassquatch.py`
 - `artifacts/scan_report.md` -- canonical Markdown report from `generate_report.py`
+- `toolchain_versions` in scan JSON -- captured `ptxas`/`nvcc`/`nvdisasm`/Python versions and detected PTX ISA version
 
 Legacy files such as `results.json` and `results_full.json` are still accepted
 as input by analysis/reporting utilities for compatibility.

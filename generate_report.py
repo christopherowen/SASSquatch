@@ -66,6 +66,7 @@ def _classify_mnemonic(mnemonic: str) -> Tuple[str, str]:
 def render_markdown(data: Dict[str, Any]) -> str:
     ts = data.get("timestamp") or datetime.now().isoformat()
     targets = data.get("targets") or []
+    toolchain = data.get("toolchain_versions") or {}
 
     p3 = _get_phase3_by_target(data)
     p2 = _get_phase2_by_target(data)
@@ -76,6 +77,18 @@ def render_markdown(data: Dict[str, Any]) -> str:
     lines.append(f"- **Timestamp**: `{ts}`")
     if targets:
         lines.append(f"- **Targets**: `{', '.join(targets)}`")
+    lines.append("")
+    lines.append("## Toolchain used for this report")
+    lines.append("")
+    if toolchain:
+        lines.append(f"- **Detected PTX ISA version**: `{toolchain.get('ptx_isa_version', 'unknown')}`")
+        lines.append(f"- **ptxas**: `{toolchain.get('ptxas', 'unknown')}`")
+        lines.append(f"- **nvcc**: `{toolchain.get('nvcc', 'unknown')}`")
+        lines.append(f"- **nvdisasm**: `{toolchain.get('nvdisasm', 'unknown')}`")
+        lines.append(f"- **python**: `{toolchain.get('python', 'unknown')}`")
+    else:
+        lines.append("- Toolchain metadata not found in the scan JSON.")
+        lines.append("- Regenerate scan artifacts with current `sassquatch.py` to include toolchain versions.")
     lines.append("")
     lines.append("## What this report is (and is not)")
     lines.append("")
