@@ -67,6 +67,23 @@ SASSquatch was developed for use inside a CUDA container:
 docker exec -it <container> python3 /path/to/sassquatch.py --phase 1 2
 ```
 
+### Smoke Tests
+
+`smoke_signals.py` is a minimal unit-style smoke suite that catches critical
+regressions from cleanup/refactor work (import paths, Phase 2 orchestration,
+and inline PTX template escaping).
+
+```bash
+# Run from repo root
+python3 -m unittest smoke_signals.py -v
+
+# Or run directly
+python3 smoke_signals.py -v
+
+# Run in Docker container
+docker exec <container> bash -lc "cd /workspace/sasquatch && python3 -m unittest smoke_signals.py -v"
+```
+
 ## Artifact Conventions
 
 SASSquatch writes artifacts under `artifacts/` by default.
@@ -87,6 +104,7 @@ python generate_report.py
 | Path | Description |
 |------|-------------|
 | `sassquatch.py` | Main CLI entry point and phase orchestrator |
+| `smoke_signals.py` | Root smoke tests guarding key regression paths |
 | `generate_report.py` | Render Markdown reports from JSON scan output |
 | `src/ptx_probe.py` | PTX instruction generator and compilation tester (Phase 1) |
 | `src/sass_probe.py` | SASS binary parser, patcher, and opcode enumerator (Phase 2 & 3) |
