@@ -38,7 +38,7 @@ from pathlib import Path
 from src.artifact_paths import DEFAULT_ARTIFACT_DIR, canonical_scan_json_path, ensure_artifact_dir
 from src.ptx_probe import (
     PTXProber, ProbeResult, ProbeOutcome,
-    generate_all_probes,
+    generate_all_probes, build_ptx_program,
 )
 from src.sass_probe import CubinBuilder, SASSProber, SASSProbeResult
 from src.sass_reference import (
@@ -364,7 +364,6 @@ def run_phase2(args, phase1_results=None):
         opcode_map = dummy_prober.discover_opcode_field()
 
         # Step 5: Compile ALL successful Phase 1 probes to cubins for broader coverage
-        from ptx_probe import generate_all_probes, build_ptx_program, ProbeResult
 
         # If Phase 1 already ran, extract compilable probes from its results.
         # Union across ALL targets so we get maximum SASS coverage.
@@ -383,7 +382,6 @@ def run_phase2(args, phase1_results=None):
             print(f"\n  {C.DIM}Phase 1 not run; compiling {len(all_probes)} probes to find compilable ones...{C.RESET}")
 
             compilable = []
-            from ptx_probe import PTXProber
             prober = PTXProber(targets=[target], verbose=False)
             for spec in all_probes:
                 outcome = prober.probe_instruction(spec, target)
@@ -393,17 +391,17 @@ def run_phase2(args, phase1_results=None):
         print(f"  {C.WHITE}{len(compilable)}{C.RESET} compilable probes for SASS discovery")
         print(f"  {C.DIM}Compiling at -O0, -O1, -O3 to maximize opcode coverage{C.RESET}")
 
-    t_start = time.monotonic()
+        t_start = time.monotonic()
 
-    def on_probe_progress(progress, total, num_opcodes):
-        now = time.monotonic()
-        elapsed = now - t_start
-        rate = progress / elapsed if elapsed > 0 else 0
-        sys.stdout.write(
-            f"\r  {progress_bar(progress, total)}"
-            f"  {rate:.0f}/s  {C.GREEN}{num_opcodes} unique opcodes{C.RESET}   "
-        )
-        sys.stdout.flush()
+        def on_probe_progress(progress, total, num_opcodes):
+            now = time.monotonic()
+            elapsed = now - t_start
+            rate = progress / elapsed if elapsed > 0 else 0
+            sys.stdout.write(
+                f"\r  {progress_bar(progress, total)}"
+                f"  {rate:.0f}/s  {C.GREEN}{num_opcodes} unique opcodes{C.RESET}   "
+            )
+            sys.stdout.flush()
 
         probe_opcodes = dummy_prober.discover_from_probes(
             compilable, build_ptx_program, target,
@@ -418,24 +416,24 @@ def run_phase2(args, phase1_results=None):
             if mnemonic not in opcode_map:
                 opcode_map[mnemonic] = info
 
-    # Step 6: CUDA C++ probes for uniform datapath discovery
-    print(f"\n  {C.DIM}Compiling CUDA C++ probes for uniform datapath instructions...{C.RESET}")
-    cuda_kernels = get_cuda_probe_kernels()
-    print(f"  {C.WHITE}{len(cuda_kernels)}{C.RESET} CUDA C++ probe kernels")
+        # Step 6: CUDA C++ probes for uniform datapath discovery
+        print(f"\n  {C.DIM}Compiling CUDA C++ probes for uniform datapath instructions...{C.RESET}")
+        cuda_kernels = get_cuda_probe_kernels()
+        print(f"  {C.WHITE}{len(cuda_kernels)}{C.RESET} CUDA C++ probe kernels")
 
-    t_cuda = time.monotonic()
+        t_cuda = time.monotonic()
 
-    def on_cuda_progress(progress, total, num_opcodes, name, success):
-        now = time.monotonic()
-        elapsed = now - t_cuda
-        rate = progress / elapsed if elapsed > 0 else 0
-        status = f"{C.GREEN}OK{C.RESET}" if success else f"{C.RED}FAIL{C.RESET}"
-        sys.stdout.write(
-            f"\r  {progress_bar(progress, total)}"
-            f"  {rate:.0f}/s  {C.GREEN}{num_opcodes} new opcodes{C.RESET}"
-            f"  {name:30s} {status}   "
-        )
-        sys.stdout.flush()
+        def on_cuda_progress(progress, total, num_opcodes, name, success):
+            now = time.monotonic()
+            elapsed = now - t_cuda
+            rate = progress / elapsed if elapsed > 0 else 0
+            status = f"{C.GREEN}OK{C.RESET}" if success else f"{C.RED}FAIL{C.RESET}"
+            sys.stdout.write(
+                f"\r  {progress_bar(progress, total)}"
+                f"  {rate:.0f}/s  {C.GREEN}{num_opcodes} new opcodes{C.RESET}"
+                f"  {name:30s} {status}   "
+            )
+            sys.stdout.flush()
 
         cuda_opcodes = compile_and_discover_with_hex(
             cuda_kernels, target,
@@ -455,6 +453,7 @@ def run_phase2(args, phase1_results=None):
         if opcode_map:
             print(f"    {'Mnemonic':16s}  {'bits[11:0]':>10s}  {'Documented?':12s}  {'Description'}")
             print(f"    {'--------':16s}  {'----------':>10s}  {'-----------':12s}  {'-----------'}")
+
             def _sort_key(item):
                 try:
                     return (0, int(item[1]["bits_11_0"], 16))
@@ -472,6 +471,8 @@ def run_phase2(args, phase1_results=None):
                     status = f"{C.YELLOW}NO{C.RESET} "
                     desc = f"{C.YELLOW}Not in reference database{C.RESET}"
                 print(f"    {mnemonic:16s}  {info['bits_11_0']:>10s}  {status:12s}       {desc}")
+        else:
+            print(f"    {C.RED}No opcodes discovered (compilation may have failed){C.RESET}")
 
         # Analyze opcode field
         opcodes_12 = set()
@@ -486,21 +487,21 @@ def run_phase2(args, phase1_results=None):
             except (ValueError, TypeError):
                 pass
 
-            print(f"\n  {C.BOLD}Opcode field analysis:{C.RESET}")
-            print(f"    Unique 12-bit low signatures: {len(opcodes_12)}")
-            print(f"    Unique 10-bit low signatures: {len(opcodes_10)}")
+        print(f"\n  {C.BOLD}Opcode field analysis:{C.RESET}")
+        print(f"    Unique 12-bit low signatures: {len(opcodes_12)}")
+        print(f"    Unique 10-bit low signatures: {len(opcodes_10)}")
 
-            if len(opcodes_12) == len(opcode_map):
-                print(f"    {C.GREEN}Observed mnemonics had unique low-12 signatures in this sample{C.RESET}")
-            elif len(opcodes_10) == len(opcode_map):
-                print(f"    {C.GREEN}Observed mnemonics had unique bits[11:2] signatures in this sample{C.RESET}")
-            else:
-                print(f"    {C.YELLOW}Collisions observed; instruction identity likely uses additional bits{C.RESET}")
+        if len(opcodes_12) == len(opcode_map):
+            print(f"    {C.GREEN}Observed mnemonics had unique low-12 signatures in this sample{C.RESET}")
+        elif len(opcodes_10) == len(opcode_map):
+            print(f"    {C.GREEN}Observed mnemonics had unique bits[11:2] signatures in this sample{C.RESET}")
+        else:
+            print(f"    {C.YELLOW}Collisions observed; instruction identity likely uses additional bits{C.RESET}")
 
         # Cross-reference with documented instruction set
-            print_subheader("Reference Database Cross-Reference")
-            ref_counts = get_instruction_count()
-            print(f"    Documented Blackwell SASS instructions: {C.WHITE}{ref_counts.get('blackwell', 0)}{C.RESET}")
+        print_subheader("Reference Database Cross-Reference")
+        ref_counts = get_instruction_count()
+        print(f"    Documented Blackwell SASS instructions: {C.WHITE}{ref_counts.get('blackwell', 0)}{C.RESET}")
 
         discovered_base = set()
         for mnemonic in opcode_map:
@@ -533,9 +534,6 @@ def run_phase2(args, phase1_results=None):
             marker = f"{C.GREEN}FOUND{C.RESET}" if found else f"{C.DIM}not probed{C.RESET}"
             tmem = f" {C.ORANGE}[TMEM]{C.RESET}" if k in sm100_tmem else ""
             print(f"      {marker:>20s}  {k:16s} {v.description}{tmem}")
-
-        else:
-            print(f"    {C.RED}No opcodes discovered (compilation may have failed){C.RESET}")
 
         opcode_maps_by_target[target] = opcode_map
 

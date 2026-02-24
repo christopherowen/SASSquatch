@@ -130,7 +130,7 @@ class SASSProbeOutcome:
 # Template kernel for SASS probing
 # ---------------------------------------------------------------------------
 
-TEMPLATE_KERNEL_CU = """\
+TEMPLATE_KERNEL_CU = r"""\
 // NOTE: Phase 3 correctness depends on the template being robust.
 //
 // We want to probe *decode legality* of candidate encodings without executing
